@@ -1,165 +1,169 @@
 import {List, Map, fromJS} from 'immutable';
 import {expect} from 'chai';
 
-import reducer from '../src/reducer';
-
+import {webPos} from '../src/reducer';
 import {PriceLevelResetEnum, PriceLevelEnum} from '../src/core/price_level_enum';
+import { createAction } from 'redux-actions';
+import {types} from '../src/core/actions';
+
+
+const TestItem1 = {
+  plu:100,
+  description: 'Coopers Pale Ale',
+  prices: {A:1, B:2, C:3, D:6, E:9 }
+};
+
+const TestItem2 = {
+  plu: 101,
+  description: 'Victoria Bitter',
+  prices: {A:2, B:3, C:4, D:7, E:10 }
+};
+
+const TestItem3 = {
+  plu: 101,
+  description: 'Coopers Sparkling Ale',
+  prices: {A:3, B:4, C:5, D:8, E:11 }
+};
 
 describe('transaction reducer', () => {
 
   it('handles ADD_ITEM without initial transaction state.', () => {
-    const item = { plu:100, description: 'This is a test item', prices: {A:1, B:2, C:3, D:4, E:5 }};
 
-    const action = {type: 'ADD_ITEM', item };
-    const nextState = reducer(undefined, action);
+    const action = createAction(types.ADD_ITEM)({ item: TestItem1 });
+    const nextState = webPos(undefined, action);
     expect(nextState).to.equal(fromJS({
-          status_buffer: item.description,
-          sale_items: [
-              { plu: 100, price: 1, description: 'This is a test item', prices:{A:1, B:2, C:3, D:4, E:5 }, quantity: 1  },
-            ]
+      status_buffer: TestItem1.description,
+      sale_items: [
+        { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 1, price: 1  }
+      ]
     }));
   });
 
   it('handles ADD_ITEM with item in list.', () => {
-    const item = { plu: 100, description: 'This is a test item', prices: {A:1.56, B:2, C:3, D:4, E:5 }};
-    const action = {type: 'ADD_ITEM', item };
-    const firstState = reducer(Map(), action);
+    const action = createAction(types.ADD_ITEM)({ item: TestItem1 });
+
+    const firstState = webPos(Map(), action);
     expect(firstState).to.equal(fromJS({
-          status_buffer: item.description,
-          sale_items: [
-              { plu: 100, price: 1.56, description: 'This is a test item', prices: {A:1.56, B:2, C:3, D:4, E:5 }, quantity: 1  },
-            ]
+      status_buffer: TestItem1.description,
+      sale_items: [
+        { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 1, price: 1  },
+      ]
     }));
 
-    const nextState = reducer(firstState, action);
+    const nextState = webPos(firstState, action);
     expect(nextState).to.equal(fromJS({
-          status_buffer: item.description,
-          sale_items: [
-              { plu: 100, price: 1.56, description: 'This is a test item', prices: {A:1.56, B:2, C:3, D:4, E:5 }, quantity: 1  },
-              { plu: 100, price: 1.56, description: 'This is a test item', prices: {A:1.56, B:2, C:3, D:4, E:5 }, quantity: 1  },
-            ]
+      status_buffer: TestItem1.description,
+      sale_items: [
+        { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices,  quantity: 1, price: 1  },
+        { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 1, price: 1  },
+      ]
     }));
   });
 
   it('handles ADD_ITEM with BATCH.', () => {
-    const item = { plu: 100,   description: 'First Added Item', prices: {A:1, B:2, C:3, D:4, E:5 } };
-    const item_1 = { plu: 101, description: 'Second Added Item', prices: {A:1, B:2, C:3, D:4, E:5 } };
-
     const actions = [
-      {type: 'ADD_ITEM', item: item  },
-      {type: 'ADD_ITEM', item: item_1 }
+      createAction(types.ADD_ITEM)({ item: TestItem1 }),
+      createAction(types.ADD_ITEM)({ item: TestItem2 })
     ];
 
-    const finalState = actions.reduce(reducer, Map());
+    const finalState = actions.reduce(webPos, Map());
     expect(finalState).to.equal(fromJS({
-          status_buffer: item_1.description,
-          sale_items: [
-              { plu: 100, price: 1, description: 'First Added Item', prices: {A:1, B:2, C:3, D:4, E:5 }, quantity: 1 },
-              { plu: 101, price: 1, description: 'Second Added Item', prices: {A:1, B:2, C:3, D:4, E:5 }, quantity: 1  },
-            ]
+      sale_items: [
+        { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 1, price: 1 },
+        { plu: TestItem2.plu, description: TestItem2.description, prices: TestItem2.prices, quantity: 1, price: 2 },
+      ],
+      status_buffer: TestItem2.description
     }));
   });
 
   it('handles ADD_ITEM with index.', () => {
-    const item = { plu: 100,   description: 'First Added Item', prices: {A:1, B:2, C:3, D:4, E:5 } };
-    const item_1 = { plu: 101, description: 'Second Added Item', prices: {A:3, B:2, C:3, D:4, E:5 } };
-    const item_2 = { plu: 102, description: 'Inserted Item', prices: {A:2, B:2, C:3, D:4, E:5 } };
 
     const actions = [
-      {type: 'ADD_ITEM', item  },
-      {type: 'ADD_ITEM', item: item_1 },
-      {type: 'ADD_ITEM', item: item_2, index: 1},
+      createAction(types.ADD_ITEM)({ item: TestItem1 }),
+      createAction(types.ADD_ITEM)({ item: TestItem2 }),
+      createAction(types.ADD_ITEM)({ item: TestItem3, index:1})
     ];
 
-    const finalState = actions.reduce(reducer, Map());
+    const finalState = actions.reduce(webPos, Map());
     expect(finalState).to.equal(fromJS({
-          sale_items: [
-              { plu: 100, description: 'First Added Item', prices: {A:1, B:2, C:3, D:4, E:5 }, quantity: 1, price: 1 },
-              { plu: 102, description: 'Inserted Item', prices: {A:2, B:2, C:3, D:4, E:5 }, quantity: 1,  price: 2 },
-              { plu: 101, description: 'Second Added Item', prices: {A:3, B:2, C:3, D:4, E:5 }, quantity: 1, price: 3 }
-            ],
-          status_buffer: item_2.description
+      sale_items: [
+        { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 1, price: 1 },
+        { plu: TestItem3.plu, description: TestItem3.description, prices: TestItem3.prices, quantity: 1, price: 3 },
+        { plu: TestItem2.plu, description: TestItem2.description, prices: TestItem2.prices, quantity: 1, price: 2 }
+      ],
+      status_buffer: TestItem3.description
     }));
   });
 
   it('handles ADD_ITEM with KeyBuffer to set Quantity', () => {
 
-    const item = {plu: 100, description: 'First Added Item', prices: {A:1, B:2, C:3, D:4, E:5 } };
-
     const actions = [
-        { type: 'SET_NUMERIC_KEYBUFFER', value: 10 },
-        { type: 'ADD_ITEM', item},
-        { type: 'ADD_ITEM', item}
+      createAction(types.SET_NUMERIC_KEYBUFFER)(10),
+      createAction(types.ADD_ITEM)({ item: TestItem1 }),
+      createAction(types.ADD_ITEM)({ item: TestItem1 })
     ];
 
-    const finalState = actions.reduce(reducer, Map());
+    const finalState = actions.reduce(webPos, Map());
     expect(finalState).to.equal(fromJS({
-          status_buffer: item.description,
-          sale_items: [
-              { plu: 100, price: 1, description: 'First Added Item', prices: {A:1, B:2, C:3, D:4, E:5 }, quantity: 10 },
-              { plu: 100, price: 1, description: 'First Added Item', prices: {A:1, B:2, C:3, D:4, E:5 }, quantity: 1 }
-            ]
+      sale_items: [
+        { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 10, price: 1 },
+        { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 1, price: 1 }
+      ],
+      status_buffer: TestItem1.description
     }));
   });
 
   it('handles ADD_ITEM setting StatusBuffer when Quantity equals > 1', () => {
-
-    const item = {plu: 100, description: 'First Added Item', prices: {A:1, B:2, C:3, D:4, E:5 } };
-
     const actions = [
-        { type: 'SET_NUMERIC_KEYBUFFER', value: 10 },
-        { type: 'ADD_ITEM', item}
+      createAction(types.SET_NUMERIC_KEYBUFFER)(10),
+      createAction(types.ADD_ITEM)({ item: TestItem1 }),
     ];
 
-    const finalState = actions.reduce(reducer, Map());
+    const finalState = actions.reduce(webPos, Map());
     expect(finalState).to.equal(fromJS({
-          status_buffer: '10 x ' + item.description,
-          sale_items: [
-              { plu: 100, price: 1, description: 'First Added Item', prices: {A:1, B:2, C:3, D:4, E:5 }, quantity: 10 }
-            ]
+      sale_items: [
+        { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 10, price: 1 }
+      ],
+      status_buffer: '10 x ' + TestItem1.description
     }));
   });
 
   it('handles ADD_ITEM when not enough available portions', () => {
-
-    const item = {plu:100, description: ' First Added Item', prices: {A:1, B:2, C:3, D:4, E:5 }};
-
     const portions = fromJS([
-        { plu: 100, available: 0 },
-        { plu: 99, available: 1 }
-      ]);
+      { plu: 100, available: 0 },
+      { plu: 99, available: 1 }
+    ]);
 
     const initialState = Map().set("portions", portions);
 
-    const action = { type: 'ADD_ITEM', item };
-    const finalState = reducer(initialState, action);
+    const action = createAction(types.ADD_ITEM)({ item: TestItem1 });
+    const finalState = webPos(initialState, action);
 
     expect(finalState).to.equal(fromJS({
-          warning_buffer: 'Available Portions Exceeded for this item'
+      warning_buffer: 'Available Portions Exceeded for this item'
     }));
   });
 
   it('handles ADD_ITEM with initial SET_PRICE_LEVEL state', () => {
-    const item = { plu:100, description: 'Item with multiple price level', prices: { A : 1, B: 2, C: 3, D: 4, E: 5 }};
     const priceLevel = { toPriceLevel: PriceLevelEnum.B, resetOn: PriceLevelResetEnum.NEVER };
 
     const actions = [
-        { type: 'SET_PRICE_LEVEL', priceLevel},
-        { type: 'ADD_ITEM', item }
-      ];
+      createAction(types.SET_PRICE_LEVEL)(priceLevel),
+      createAction(types.ADD_ITEM)({ item: TestItem1 }),
+    ];
 
-      const finalState = actions.reduce(reducer, Map());
-      expect(finalState).to.equal(fromJS({
-            price_level_config: {
-                reset_on: PriceLevelResetEnum.NEVER,
-                current_level: PriceLevelEnum.B,
-                reset_to: PriceLevelEnum.B
-            },
-            status_buffer:  item.description,
-            sale_items: [
-                { plu:100, price: 2, description: 'Item with multiple price level', prices: { A : 1, B: 2, C: 3, D: 4, E: 5 }, quantity: 1}
-            ],
-      }));
+    const finalState = actions.reduce(webPos, Map());
+    expect(finalState).to.equal(fromJS({
+      price_level_config: {
+        reset_on: PriceLevelResetEnum.NEVER,
+        current_level: PriceLevelEnum.B,
+        reset_to: PriceLevelEnum.B
+      },
+      sale_items: [
+        { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 1, price: 2}
+      ],
+      status_buffer:  TestItem1.description
+    }));
   });
 
   it('handles ADD_ITEM with mid transaction change to price level state', () => {
@@ -168,282 +172,251 @@ describe('transaction reducer', () => {
     const priceLevel = { toPriceLevel: PriceLevelEnum.B, resetOn: PriceLevelResetEnum.ITEM };
 
     const actions = [
-        { type: 'ADD_ITEM', item },
-        { type: 'SET_PRICE_LEVEL', priceLevel},
-        { type: 'ADD_ITEM', item }
-      ];
+      createAction(types.ADD_ITEM)({ item: TestItem1 }),
+      createAction(types.SET_PRICE_LEVEL)(priceLevel),
+      createAction(types.ADD_ITEM)({ item: TestItem1 })
+    ];
 
-      const finalState = actions.reduce(reducer, Map());
-      expect(finalState).to.equal(fromJS({
-            price_level_config: {
-                reset_on: PriceLevelResetEnum.NEVER,
-                current_level: PriceLevelEnum.A,
-                reset_to: PriceLevelEnum.A
-            },
-            sale_items: [
-                { plu:100, description: 'Item with multiple price level', prices: { A: 1, B: 2, C: 3, D: 4, E: 5 }, quantity: 1, price: 1},
-                { plu:100, description: 'Item with multiple price level', prices: { A: 1, B: 2, C: 3, D: 4, E: 5 }, quantity: 1, price: 2},
-            ],
-            status_buffer:  item.description,
-      }));
+    const finalState = actions.reduce(webPos, Map());
+    expect(finalState).to.equal(fromJS({
+      price_level_config: {
+        reset_on: PriceLevelResetEnum.NEVER,
+        current_level: PriceLevelEnum.A,
+        reset_to: PriceLevelEnum.A
+      },
+      sale_items: [
+        { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 1, price: 1},
+        { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 1, price: 2},
+      ],
+      status_buffer:  TestItem1.description,
+    }));
 
   });
 
   it('handles SET_PRICE_LEVEL A to existing items', () => {
-      //creates the item with multiple price levels.
-      const item = { plu:100, description: 'Item with multiple price level', prices: { A : 1, B: 2, C: 3, D: 4, E: 5 }};
-      const item_1 = { plu:101, description: 'Item with multiple price level', prices: { A : 2, B: 3, C: 4, D: 5, E: 6 }};
+    //creates the item with multiple price levels.
+    const priceLevel = { toPriceLevel: PriceLevelEnum.A, resetOn: PriceLevelResetEnum.NEVER };
 
-      const priceLevel = { toPriceLevel: PriceLevelEnum.A, resetOn: PriceLevelResetEnum.NEVER };
+    //first of all create the add item action, then adjust the price levels.
+    const actions = [
+      createAction(types.ADD_ITEM)({ item: TestItem1 }),
+      createAction(types.ADD_ITEM)({ item: TestItem2 }),
+      createAction(types.SET_PRICE_LEVEL)(priceLevel)
+    ];
 
-      //first of all create the add item action, then adjust the price levels.
-      const actions = [
-          { type: 'ADD_ITEM', item },
-          { type: 'ADD_ITEM', item: item_1 },
-          { type: 'SET_PRICE_LEVEL', priceLevel}
-        ];
-
-      const finalState = actions.reduce(reducer, Map());
-      expect(finalState).to.equal(fromJS({
-            price_level_config: {
-                reset_on: PriceLevelResetEnum.NEVER,
-                current_level: PriceLevelEnum.A,
-                reset_to: PriceLevelEnum.A
-            },
-            sale_items: [
-                { plu:100, price: 1, description: 'Item with multiple price level', prices: { A: 1, B: 2, C: 3, D: 4, E: 5 }, quantity: 1},
-                { plu:101, price: 2, description: 'Item with multiple price level', prices: { A: 2, B: 3, C: 4, D: 5, E: 6 }, quantity: 1}
-              ],
-              status_buffer:  item_1.description
-            }));
+    const finalState = actions.reduce(webPos, Map());
+    expect(finalState).to.equal(fromJS({
+      sale_items: [
+        { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 1, price: TestItem1.prices.A},
+        { plu: TestItem2.plu, description: TestItem2.description, prices: TestItem2.prices, quantity: 1, price: TestItem2.prices.A},
+      ],
+      status_buffer:  TestItem2.description,
+      price_level_config: {
+        reset_on: PriceLevelResetEnum.NEVER,
+        current_level: PriceLevelEnum.A,
+        reset_to: PriceLevelEnum.A
+      }
+    }));
   });
 
   it('handles SET_PRICE_LEVEL B to existing items.', () => {
-      //creates the item with multiple price levels.
-      const item = { plu:100, description: 'Item with multiple price level', prices: { A : 1, B: 2, C: 3, D: 4, E: 5 }};
-      const item_1 = { plu:101, description: 'Item with multiple price level', prices: { A : 2, B: 3, C: 4, D: 5, E: 6 }};
+    //creates the item with multiple price levels.
+    const priceLevel = { toPriceLevel: PriceLevelEnum.B, resetOn: PriceLevelResetEnum.NEVER };
 
-      const priceLevel = { toPriceLevel: PriceLevelEnum.B, resetOn: PriceLevelResetEnum.NEVER };
+    //first of all create the add item action, then adjust the price levels.
+    const actions = [
+      createAction(types.ADD_ITEM)({ item: TestItem1 }),
+      createAction(types.ADD_ITEM)({ item: TestItem2 }),
+      createAction(types.SET_PRICE_LEVEL)(priceLevel)
+    ];
 
-      //first of all create the add item action, then adjust the price levels.
-      const actions = [
-          { type: 'ADD_ITEM', item },
-          { type: 'ADD_ITEM', item: item_1 },
-          { type: 'SET_PRICE_LEVEL', priceLevel}
-        ];
-
-      const finalState = actions.reduce(reducer, Map());
-      expect(finalState).to.equal(fromJS({
-            price_level_config: {
-                reset_on: PriceLevelResetEnum.NEVER,
-                current_level: PriceLevelEnum.B,
-                reset_to: PriceLevelEnum.B
-            },
-            sale_items: [
-                { plu:100, price: 2, description: 'Item with multiple price level', prices: { A : 1, B: 2, C: 3, D: 4, E: 5 }, quantity: 1},
-                { plu:101, price: 3, description: 'Item with multiple price level', prices: { A : 2, B: 3, C: 4, D: 5, E: 6 }, quantity: 1}
-              ],
-              status_buffer:  item_1.description
-            }));
+    const finalState = actions.reduce(webPos, Map());
+    expect(finalState).to.equal(fromJS({
+      sale_items: [
+        { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 1, price: TestItem1.prices.B},
+        { plu: TestItem2.plu, description: TestItem2.description, prices: TestItem2.prices, quantity: 1, price: TestItem2.prices.B},
+      ],
+      status_buffer:  TestItem2.description,
+      price_level_config: {
+        reset_on: PriceLevelResetEnum.NEVER,
+        current_level: PriceLevelEnum.B,
+        reset_to: PriceLevelEnum.B
+      }
+    }));
   });
 
   it('handles SET_PRICE_LEVEL C to existing items.', () => {
-      //creates the item with multiple price levels.
-      const item = { plu:100, description: 'Item with multiple price level', prices: { A : 1, B: 2, C: 3, D: 4, E: 5 }};
-      const item_1 = { plu:101, description: 'Item with multiple price level', prices: { A : 2, B: 3, C: 4, D: 5, E: 6 }};
+    //creates the item with multiple price levels.
+    const priceLevel = { toPriceLevel: PriceLevelEnum.C, resetOn: PriceLevelResetEnum.NEVER };
 
-      const priceLevel = { toPriceLevel: PriceLevelEnum.C, resetOn: PriceLevelResetEnum.NEVER };
+    //first of all create the add item action, then adjust the price levels.
+    const actions = [
+      createAction(types.ADD_ITEM)({ item: TestItem1 }),
+      createAction(types.ADD_ITEM)({ item: TestItem2 }),
+      createAction(types.SET_PRICE_LEVEL)(priceLevel)
+    ];
 
-      //first of all create the add item action, then adjust the price levels.
-      const actions = [
-          { type: 'ADD_ITEM', item },
-          { type: 'ADD_ITEM', item: item_1 },
-          { type: 'SET_PRICE_LEVEL', priceLevel}
-        ];
-
-      const finalState = actions.reduce(reducer, Map());
-      expect(finalState).to.equal(fromJS({
-            price_level_config: {
-                reset_on: PriceLevelResetEnum.NEVER,
-                current_level: PriceLevelEnum.C,
-                reset_to: PriceLevelEnum.C
-            },
-            sale_items: [
-                { plu:100, price: 3, description: 'Item with multiple price level', prices: { A : 1, B: 2, C: 3, D: 4, E: 5 }, quantity: 1},
-                { plu:101, price: 4, description: 'Item with multiple price level', prices: { A : 2, B: 3, C: 4, D: 5, E: 6 }, quantity: 1}
-              ],
-              status_buffer:  item_1.description
-            }));
+    const finalState = actions.reduce(webPos, Map());
+    expect(finalState).to.equal(fromJS({
+      sale_items: [
+        { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 1, price: TestItem1.prices.C},
+        { plu: TestItem2.plu, description: TestItem2.description, prices: TestItem2.prices, quantity: 1, price: TestItem2.prices.C},
+      ],
+      status_buffer:  TestItem2.description,
+      price_level_config: {
+        reset_on: PriceLevelResetEnum.NEVER,
+        current_level: PriceLevelEnum.C,
+        reset_to: PriceLevelEnum.C
+      }
+    }));
   });
 
   it('handles SET_PRICE_LEVEL D to existing items', () => {
-      //creates the item with multiple price levels.
-      const item = { plu:100,  description: 'Item with multiple price level', prices: { A : 1, B: 2, C: 3, D: 4, E: 5 }};
-      const item_1 = { plu:101,  description: 'Item with multiple price level', prices: { A : 2, B: 3, C: 4, D: 5, E: 6 }};
+    //creates the item with multiple price levels.
+    const priceLevel = { toPriceLevel: PriceLevelEnum.D, resetOn: PriceLevelResetEnum.NEVER };
 
-      const priceLevel = { toPriceLevel: PriceLevelEnum.D, resetOn: PriceLevelResetEnum.NEVER };
+    //first of all create the add item action, then adjust the price levels.
+    const actions = [
+      createAction(types.ADD_ITEM)({ item: TestItem1 }),
+      createAction(types.ADD_ITEM)({ item: TestItem2 }),
+      createAction(types.SET_PRICE_LEVEL)(priceLevel)
+    ];
 
-      //first of all create the add item action, then adjust the price levels.
-      const actions = [
-          { type: 'ADD_ITEM', item },
-          { type: 'ADD_ITEM', item: item_1 },
-          { type: 'SET_PRICE_LEVEL', priceLevel}
-        ];
-
-      const finalState = actions.reduce(reducer, Map());
-      expect(finalState).to.equal(fromJS({
-            price_level_config: {
-                reset_on: PriceLevelResetEnum.NEVER,
-                current_level: PriceLevelEnum.D,
-                reset_to: PriceLevelEnum.D
-            },
-            sale_items: [
-                { plu:100, price: 4, description: 'Item with multiple price level', prices: { A : 1, B: 2, C: 3, D: 4, E: 5 }, quantity: 1},
-                { plu:101, price: 5, description: 'Item with multiple price level', prices: { A : 2, B: 3, C: 4, D: 5, E: 6 }, quantity: 1}
-              ],
-              status_buffer:  item_1.description
-            }));
+    const finalState = actions.reduce(webPos, Map());
+    expect(finalState).to.equal(fromJS({
+      sale_items: [
+        { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 1, price: TestItem1.prices.D},
+        { plu: TestItem2.plu, description: TestItem2.description, prices: TestItem2.prices, quantity: 1, price: TestItem2.prices.D},
+      ],
+      status_buffer:  TestItem2.description,
+      price_level_config: {
+        reset_on: PriceLevelResetEnum.NEVER,
+        current_level: PriceLevelEnum.D,
+        reset_to: PriceLevelEnum.D
+      }
+    }));
   });
 
   it('handles SET_PRICE_LEVEL E to existing items', () => {
-      //creates the item with multiple price levels.
-      const item = { plu:100, description: 'Item with multiple price level', prices: { A : 1, B: 2, C: 3, D: 4, E: 5 }};
-      const item_1 = { plu:101, description: 'Item with multiple price level', prices: { A : 2, B: 3, C: 4, D: 5, E: 6 }};
-
-      const priceLevel = { toPriceLevel: PriceLevelEnum.E, resetOn: PriceLevelResetEnum.NEVER };
-
-      //first of all create the add item action, then adjust the price levels.
-      const actions = [
-          { type: 'ADD_ITEM', item },
-          { type: 'ADD_ITEM', item: item_1 },
-          { type: 'SET_PRICE_LEVEL', priceLevel}
-        ];
-
-      const finalState = actions.reduce(reducer, Map());
-      expect(finalState).to.equal(fromJS({
-            price_level_config: {
-                reset_on: PriceLevelResetEnum.NEVER,
-                current_level: PriceLevelEnum.E,
-                reset_to: PriceLevelEnum.E
-            },
-            sale_items: [
-                { plu:100, price: 5, description: 'Item with multiple price level', prices: { A : 1, B: 2, C: 3, D: 4, E: 5 }, quantity: 1},
-                { plu:101, price: 6, description: 'Item with multiple price level', prices: { A : 2, B: 3, C: 4, D: 5, E: 6 }, quantity: 1}
-              ],
-              status_buffer:  item_1.description
-            }));
-  });
-
-  it('handles COMPLETE_SALE removes transient state + sale_items', () => {
-
-    const item = { plu:100, description: 'Item with multiple price level', prices: { A : 1, B: 2, C: 3, D: 4, E: 5 }};
-    const item_1 = { plu:101, description: 'Item with multiple price level', prices: { A : 2, B: 3, C: 4, D: 5, E: 6 }};
-
+    //creates the item with multiple price levels.
     const priceLevel = { toPriceLevel: PriceLevelEnum.E, resetOn: PriceLevelResetEnum.NEVER };
 
     //first of all create the add item action, then adjust the price levels.
     const actions = [
-        { type: 'ADD_ITEM', item },
-        { type: 'ADD_ITEM', item: item_1 },
-        { type: 'COMPLETE_SALE' }
-      ];
+      createAction(types.ADD_ITEM)({ item: TestItem1 }),
+      createAction(types.ADD_ITEM)({ item: TestItem2 }),
+      createAction(types.SET_PRICE_LEVEL)(priceLevel)
+    ];
 
-      const finalState = actions.reduce(reducer, Map());
-      expect(finalState).to.equal(Map());
+    const finalState = actions.reduce(webPos, Map());
+    expect(finalState).to.equal(fromJS({
+      sale_items: [
+        { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 1, price: TestItem1.prices.E},
+        { plu: TestItem2.plu, description: TestItem2.description, prices: TestItem2.prices, quantity: 1, price: TestItem2.prices.E},
+      ],
+      status_buffer:  TestItem2.description,
+      price_level_config: {
+        reset_on: PriceLevelResetEnum.NEVER,
+        current_level: PriceLevelEnum.E,
+        reset_to: PriceLevelEnum.E
+      }
+    }));
+  });
+
+  it('handles COMPLETE_SALE removes transient state + sale_items', () => {
+    //first of all create the add item action, then adjust the price levels.
+    const actions = [
+      createAction(types.ADD_ITEM)({ item: TestItem1 }),
+      createAction(types.ADD_ITEM)({ item: TestItem2 }),
+      createAction(types.COMPLETE_SALE)()
+    ];
+
+    const finalState = actions.reduce(webPos, Map());
+    expect(finalState).to.equal(Map());
   });
 
   it('COMPLETE_SALE leaves price level at last configured state', () => {
+
     const actions = [
-      { type: 'SET_PRICE_LEVEL', priceLevel: { toPriceLevel: PriceLevelEnum.D, resetOn: PriceLevelResetEnum.NEVER }},
-      { type: 'COMPLETE_SALE' }
+      createAction(types.SET_PRICE_LEVEL)({ toPriceLevel: PriceLevelEnum.D, resetOn: PriceLevelResetEnum.NEVER }),
+      createAction(types.COMPLETE_SALE)()
     ];
 
-    const finalState = actions.reduce(reducer, Map());
+    const finalState = actions.reduce(webPos, Map());
     expect(finalState).to.equal(fromJS({
-          price_level_config: {
-              reset_on: PriceLevelResetEnum.NEVER,
-              current_level: PriceLevelEnum.D,
-              reset_to: PriceLevelEnum.D
-          }
+      price_level_config: {
+        reset_on: PriceLevelResetEnum.NEVER,
+        current_level: PriceLevelEnum.D,
+        reset_to: PriceLevelEnum.D
+      }
     }));
   });
 
   it('COMPLETE_SALE resets price level state to a previous level (NOT A)', () => {
-
-    const item = { plu:100, description: 'Item with multiple price level', prices: { A : 1, B: 2, C: 3, D: 4, E: 5 }};
-    const item_1 = { plu:101, description: 'Item with multiple price level', prices: { A : 2, B: 3, C: 4, D: 5, E: 6 }};
-
-    const priceLevel = { toPriceLevel: PriceLevelEnum.B, resetOn: PriceLevelResetEnum.SALE };
-
-    //first of all create the add item action, then adjust the price levels.
     const actions = [
-        { type: 'ADD_ITEM', item },
-        { type: 'ADD_ITEM', item: item_1 },
-        { type: 'SET_PRICE_LEVEL', priceLevel: { toPriceLevel: PriceLevelEnum.E, resetOn: PriceLevelResetEnum.NEVER }},
-        { type: 'SET_PRICE_LEVEL', priceLevel: { toPriceLevel: PriceLevelEnum.D, resetOn: PriceLevelResetEnum.SALE }},
-        { type: 'COMPLETE_SALE' }
-      ];
+      createAction(types.ADD_ITEM)({ item: TestItem1 }),
+      createAction(types.ADD_ITEM)({ item: TestItem2 }),
+      createAction(types.SET_PRICE_LEVEL)({ toPriceLevel: PriceLevelEnum.E, resetOn: PriceLevelResetEnum.NEVER }),
+      createAction(types.SET_PRICE_LEVEL)({ toPriceLevel: PriceLevelEnum.D, resetOn: PriceLevelResetEnum.SALE }),
+      createAction(types.COMPLETE_SALE)()
+    ];
 
-      const finalState = actions.reduce(reducer, Map());
-      expect(finalState).to.equal(fromJS({
-            price_level_config: {
-                reset_on: PriceLevelResetEnum.NEVER,
-                current_level: PriceLevelEnum.E,
-                reset_to: PriceLevelEnum.E
-            }
-      }));
+    const finalState = actions.reduce(webPos, Map());
+    expect(finalState).to.equal(fromJS({
+      price_level_config: {
+        reset_on: PriceLevelResetEnum.NEVER,
+        current_level: PriceLevelEnum.E,
+        reset_to: PriceLevelEnum.E
+      }
+    }));
   });
 
   it('SET_PRICE_LEVEL changes RESET TO PriceLevel on Sale RESET types', () => {
-    const priceLevel = { toPriceLevel: PriceLevelEnum.C, resetOn: PriceLevelResetEnum.SALE };
     const actions = [
-      { type: 'SET_PRICE_LEVEL', priceLevel }
+      createAction(types.SET_PRICE_LEVEL)({ toPriceLevel: PriceLevelEnum.C, resetOn: PriceLevelResetEnum.SALE }),
     ];
 
-    const finalState = actions.reduce(reducer, Map());
+    const finalState = actions.reduce(webPos, Map());
     expect(finalState).to.equal(fromJS({
-          price_level_config: {
-              reset_on: PriceLevelResetEnum.SALE,
-              current_level: PriceLevelEnum.C,
-              reset_to: PriceLevelEnum.A
-          },
-          sale_items: []
+      price_level_config: {
+        reset_on: PriceLevelResetEnum.SALE,
+        current_level: PriceLevelEnum.C,
+        reset_to: PriceLevelEnum.A
+      },
+      sale_items: []
     }));
   });
 
   it('SET_PRICE_LEVEL changes RESET TO PriceLevel on Never RESET types', () => {
-    const priceLevel = { toPriceLevel: PriceLevelEnum.D, resetOn: PriceLevelResetEnum.NEVER };
     const actions = [
-      { type: 'SET_PRICE_LEVEL', priceLevel }
+      createAction(types.SET_PRICE_LEVEL)({ toPriceLevel: PriceLevelEnum.D, resetOn: PriceLevelResetEnum.NEVER }),
     ];
 
-    const finalState = actions.reduce(reducer, Map());
+    const finalState = actions.reduce(webPos, Map());
     expect(finalState).to.equal(fromJS({
-          price_level_config: {
-              reset_on: PriceLevelResetEnum.NEVER,
-              current_level: PriceLevelEnum.D,
-              reset_to: PriceLevelEnum.D
-          },
-          sale_items: []
+      price_level_config: {
+        reset_on: PriceLevelResetEnum.NEVER,
+        current_level: PriceLevelEnum.D,
+        reset_to: PriceLevelEnum.D
+      },
+      sale_items: []
     }));
   });
 
   it('RESETS_PRICE level to previous state and resets ResetOn flag', () => {
-
-    const priceLevel = { toPriceLevel: PriceLevelEnum.B, resetOn: PriceLevelResetEnum.NEVER };
     const actions = [
-      { type: 'SET_PRICE_LEVEL', priceLevel },
-      { type: 'RESET_PRICE_LEVEL' }
+      createAction(types.SET_PRICE_LEVEL)({ toPriceLevel: PriceLevelEnum.B, resetOn: PriceLevelResetEnum.NEVER }),
+      createAction(types.RESET_PRICE_LEVEL)()
     ];
 
-    const finalState = actions.reduce(reducer, Map());
+    const finalState = actions.reduce(webPos, Map());
     expect(finalState).to.equal(fromJS({
-          price_level_config: {
-              reset_on: PriceLevelResetEnum.NEVER,
-              current_level: PriceLevelEnum.B,
-              reset_to: PriceLevelEnum.B
-          },
-          sale_items: []
+      price_level_config: {
+        reset_on: PriceLevelResetEnum.NEVER,
+        current_level: PriceLevelEnum.B,
+        reset_to: PriceLevelEnum.B
+      },
+      sale_items: []
     }));
   });
 
