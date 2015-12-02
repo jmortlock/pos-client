@@ -101,6 +101,9 @@ export function resetPriceLevel(state) {
   return state;
 }
 
+/*
+* Update the sale transaction items to match the current price level.
+*/
 export function applyPriceLevelToCurrentTransaction(state) {
   const priceLevelCode = getCurrentPriceLevelCode(state);
   return state.set("sale_items", state.get("sale_items", List()).map(x =>  x.set("price", x.get("prices").get(priceLevelCode))));
