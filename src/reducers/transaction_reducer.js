@@ -138,7 +138,7 @@ export function setPriceLevel(state, priceLevel) {
 */
 export function completeSale(state) {
   let priceLevelConfig = state.get("price_level_config", DEFAULT_PRICE_LEVEL_CONFIG);
-
+  
   if (priceLevelConfig.get("reset_on") === PriceLevelResetEnum.SALE) {
     let config = {
       reset_on: PriceLevelResetEnum.NEVER,
