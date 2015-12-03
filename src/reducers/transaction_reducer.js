@@ -45,6 +45,8 @@ export function addItem(state, item, index) {
   const quantity = state.get("numeric_key_buffer", 1);
   const insert_list = state.get("sale_items", List());
 
+//console.log(fromJS(item));
+
   const priceLevelConfig = state.get("price_level_config", DEFAULT_PRICE_LEVEL_CONFIG);
 
   //determine the price level code.
@@ -69,11 +71,12 @@ export function addItem(state, item, index) {
                   .set("status_buffer", status_buffer)
                   .set("sale_items", insert_list.splice(index, 0, itemMap));
     } else {
-      return removeTransientStateInformation(state)
+       return removeTransientStateInformation(state)
                   .set("status_buffer", status_buffer)
                   .set("sale_items", insert_list.push(itemMap));
     }
   }
+  return state;
 };
 
 /*
@@ -138,7 +141,7 @@ export function setPriceLevel(state, priceLevel) {
 */
 export function completeSale(state) {
   let priceLevelConfig = state.get("price_level_config", DEFAULT_PRICE_LEVEL_CONFIG);
-  
+
   if (priceLevelConfig.get("reset_on") === PriceLevelResetEnum.SALE) {
     let config = {
       reset_on: PriceLevelResetEnum.NEVER,

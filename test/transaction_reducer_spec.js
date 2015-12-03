@@ -3,9 +3,16 @@ import {expect} from 'chai';
 
 import {webPos} from '../src/reducer';
 import {PriceLevelResetEnum, PriceLevelEnum} from '../src/core/price_level_enum';
-import { createAction } from 'redux-actions';
+import {createAction} from 'redux-actions';
 import {types} from '../src/core/actions';
+import WebAPI from '../src/WebAPI';
+import makeStore from '../src/store';
 
+import nock from 'nock';
+import { CALL_API } from 'redux-api-middleware';
+import { apiMiddleware } from 'redux-api-middleware';
+
+import configureStore from 'redux-mock-store';
 
 const TestItem1 = {
   plu:100,
@@ -25,10 +32,71 @@ const TestItem3 = {
   prices: {A:3, B:4, C:5, D:8, E:11 }
 };
 
+const TestItemAsync = {
+  plu: 101,
+  description: 'Async Item Return',
+  prices: {A:3, B:4, C:5, D:8, E:11 }
+};
+
+function getSalesStock(plu) {
+return {
+    [CALL_API]: {
+      endpoint: `http://192.168.0.1/sales_stock/${plu}`,
+      method: 'GET',
+      types: ['FASTPLU_REQUEST', types.FASTPLU, types.FASTPLU]
+    }
+}};
+
+const middlewares = [ apiMiddleware ]
+const mockStore = configureStore(middlewares);
+
+
 describe('transaction reducer', () => {
+  afterEach(() => {
+    nock.cleanAll();
+  });
+
+  it('handles FAST_PLU API Success', (done) => {
+    nock('http://192.168.0.1/')
+    .defaultReplyHeaders({
+      'Content-Type': 'application/json'
+    })
+    .get('/sales_stock/100')
+    .reply(200, TestItemAsync );
+
+    const requestAction = { meta: undefined, payload: undefined, type: 'FASTPLU_REQUEST' };
+    const successAction = { meta: undefined, type: types.FASTPLU, payload: TestItemAsync };
+
+    const expectedActions = [ requestAction, successAction ];
+
+    //const store = mockStore(Map(), expectedActions, done);
+    //store.dispatch(WebAPI.getSalesStock(100));
+    const action = getSalesStock(100);
+
+    const store = mockStore(Map(), expectedActions, done);
+    store.dispatch(action);
+  });
+
+  it('handles FAST_PLU API Http status 404 Item not found.', (done) => {
+    nock('http://192.168.0.1/')
+    .defaultReplyHeaders({
+      'Content-Type': 'application/json'
+    })
+    .get('/sales_stock/100')
+    .reply(404, {});
+
+    const action = getSalesStock(100);
+
+    const requestAction = { meta: undefined, payload: undefined, type: 'FASTPLU_REQUEST' };
+    const failureAction = { error: true, meta: undefined, type: types.FASTPLU, payload: { message: "404 - Not Found", name: "ApiError", response: {}, "status": 404, statusText: "Not Found" } };
+
+    const expectedActions = [ requestAction, failureAction ];
+
+    const store = mockStore(Map(), expectedActions, done);
+    store.dispatch(action);
+  });
 
   it('handles ADD_ITEM without initial transaction state.', () => {
-
     const action = createAction(types.ADD_ITEM)({ item: TestItem1 });
     const nextState = webPos(undefined, action);
     expect(nextState).to.equal(fromJS({
@@ -36,6 +104,40 @@ describe('transaction reducer', () => {
       sale_items: [
         { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 1, price: 1  }
       ]
+    }));
+  });
+
+  it('handles ADD_ITEM to Store.', () => {
+    const action = createAction(types.ADD_ITEM)({ item: TestItem1 });
+    const store = makeStore();
+    store.dispatch(action);
+
+    expect(store.getState()).to.equal(fromJS({
+      status_buffer: TestItem1.description,
+      sale_items: [
+        { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 1, price: 1  }
+      ]
+    }));
+  });
+
+  it('handles FASTPLU_SUCCESS.', () => {
+    const action = createAction(types.FASTPLU)(TestItem1); //{ type: types.FAST_PLU, payload: TestItem1  };
+    const firstState = webPos(Map(), action);
+
+    expect(firstState).to.equal(fromJS({
+      status_buffer: TestItem1.description,
+      sale_items: [
+        { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 1, price: 1  }
+      ]
+    }));
+  });
+
+  it('handles FASTPLU_FAILURE', () => {
+    const failureAction = { meta: undefined, error: true, type: types.FASTPLU, payload: { message: "404 - Not Found", name: "ApiError", response: {}, "status": 404, statusText: "Not Found" } };
+
+    const firstState = webPos(Map(), failureAction);
+    expect(firstState).to.equal(fromJS({
+        warnings: [ '404 - Not Found' ]
     }));
   });
 
