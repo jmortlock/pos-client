@@ -141,7 +141,6 @@ export function setPriceLevel(state, priceLevel) {
 */
 export function completeSale(state) {
   let priceLevelConfig = state.get("price_level_config", DEFAULT_PRICE_LEVEL_CONFIG);
-
   if (priceLevelConfig.get("reset_on") === PriceLevelResetEnum.SALE) {
     let config = {
       reset_on: PriceLevelResetEnum.NEVER,
@@ -150,6 +149,12 @@ export function completeSale(state) {
     };
     state = state.set("price_level_config", Map(config));
   }
-
   return removeTransientStateInformation(state).remove("sale_items");
+};
+
+/*
+* Set the index of the currently selected tranasction item.
+*/
+export function setSelectedSaleItemIndex(state, index) {
+  return state.set("selected_saleitem_index", index);
 }

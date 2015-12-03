@@ -522,4 +522,12 @@ describe('transaction reducer', () => {
     }));
   });
 
+  it('handles Setting the currently selected tranasction item index.', () => {
+    const action = createAction(types.SET_SELECTED_SALEITEM_INDEX)(1);
+    const finalState = webPos(Map(), action);
+    expect(finalState).to.equal(fromJS({
+        "selected_saleitem_index": 1
+    }));
+  });
+
 });
