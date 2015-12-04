@@ -1,5 +1,5 @@
 import {createStore, applyMiddleware, combineReducers} from 'redux';
-import {webPos, asyncTest} from './reducer';
+import {webPos} from './reducer';
 import {Map} from 'immutable';
 
 //import promiseMiddleware from 'redux-promise';
