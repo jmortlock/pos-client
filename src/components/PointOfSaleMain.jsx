@@ -23,7 +23,7 @@ export const PointOfSaleMain = React.createClass({
         </Row>
         <Row>
           <Col md={8}>
-              <GridPage />
+              <GridPage callback={this.props.genericButtonPress}/>
           </Col>
           <Col md={4}>
               <TransactionList items={this.props.items} />

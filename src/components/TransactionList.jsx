@@ -11,6 +11,6 @@ export default React.createClass({
                 <td>{item.get("description")}</td>
               </tr>;
     };
-    return <div><Table response hover striped ><thead><tr><th>Qty</th><th>Description</th></tr></thead>{this.props.items.map(createItem)}</Table></div>;
+    return <div><Table response hover striped ><thead><tr><th>Qty</th><th>Description</th></tr></thead><tbody>{this.props.items.map(createItem)}</tbody></Table></div>;
   }
 });

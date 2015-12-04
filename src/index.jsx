@@ -22,6 +22,7 @@ store.dispatch(action);
 const newAction = createAction(types.SET_NUMERIC_KEYBUFFER)( 10 );
 store.dispatch(newAction);
 store.dispatch(action);
+store.dispatch(action);
 
 
 const routes = <Route component={App}>

@@ -6,7 +6,13 @@ export const GridButton = React.createClass({
   render: function() {
 
     return <div>
-            <Button bsStyle="default" bsSize="large" block>{ this.props.text }</Button>
+            <Button
+              bsStyle="default"
+              bsSize="large"
+              onClick={() => this.props.callback(0)}
+              block>
+
+              { this.props.text }</Button>
           </div>;
   }
 });

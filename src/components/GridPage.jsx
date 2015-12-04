@@ -11,7 +11,7 @@ export default React.createClass({
   render: function() {
     var rows = [];
     for(var i=0; i < 6; i++) {
-      rows.push(<Col md={2}><GridButton text={ '0,'+ i }></GridButton>  </Col>);
+      rows.push(<Col md={2}><GridButton callback={this.props.callback} text={ '0,'+ i }></GridButton>  </Col>);
     };
 
     return <div>
