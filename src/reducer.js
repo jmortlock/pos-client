@@ -1,5 +1,5 @@
 import {List, Map, fromJS} from 'immutable';
-import {addItem, removeItem, setPriceLevel, resetPriceLevel, completeSale} from './reducers/transaction_reducer';
+import {addItem, removeItem,removeSelectedItem, setPriceLevel, resetPriceLevel, completeSale, setSelectedSaleItemIndex} from './reducers/transaction_reducer';
 import {setNumericKeyBuffer, appendNumericKeyBuffer} from './reducers/numeric_buffer_reducer';
 import {types} from '../src/core/actions';
 import { createAction, handleAction, handleActions } from 'redux-actions';
@@ -8,6 +8,9 @@ import { createAction, handleAction, handleActions } from 'redux-actions';
 const INITIAL_STATE = Map();
 
 export const webPos = handleActions({
+  [types.SET_SELECTED_SALEITEM_INDEX]: (state, action) => {
+    return setSelectedSaleItemIndex(state, action.payload);
+  },
   [types.SET_NUMERIC_KEYBUFFER]: ( state, action ) => {
     return setNumericKeyBuffer(state, action.payload);
   },
@@ -18,7 +21,10 @@ export const webPos = handleActions({
     return addItem(state, action.payload.item, action.payload.index);
   },
   [types.REMOVE_ITEM]: (state, action) => {
-    return removeItem(state, action.item, action.index);
+    return removeItem(state, action.index);
+  },
+  [types.REMOVE_SELECTED_ITEM]: (state, action) => {
+    return removeSelectedItem(state);
   },
   [types.RESET_PRICE_LEVEL]: (state, action) => {
     return resetPriceLevel(state);

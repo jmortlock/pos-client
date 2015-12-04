@@ -522,4 +522,62 @@ describe('transaction reducer', () => {
     }));
   });
 
+  it('handles Setting the currently selected tranasction item index.', () => {
+    const action = createAction(types.SET_SELECTED_SALEITEM_INDEX)(1);
+    const finalState = webPos(Map(), action);
+    expect(finalState).to.equal(fromJS({
+        "selected_saleitem_index": 1
+    }));
+  });
+
+
+  it('handles REMOVE_SELECTED_ITEM with no selection set', () => {
+    const actions = [
+      createAction(types.ADD_ITEM)({ item: TestItem1 }),
+      createAction(types.SET_SELECTED_SALEITEM_INDEX)(-1),
+      createAction(types.REMOVE_SELECTED_ITEM)()
+    ];
+
+    const finalState = actions.reduce(webPos, Map());
+    expect(finalState).to.equal(fromJS({
+      selected_saleitem_index: -1,
+      status_buffer: TestItem1.description,
+      sale_items: [
+        { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 1, price: 1  }
+      ]
+    }));
+  });
+
+  it('handles REMOVE_ITEM first in list', () => {
+    const actions = [
+      createAction(types.ADD_ITEM)({ item: TestItem1 }),
+      createAction(types.ADD_ITEM)({ item: TestItem2 }),
+      createAction(types.SET_SELECTED_SALEITEM_INDEX)(0),
+      createAction(types.REMOVE_SELECTED_ITEM)()
+    ];
+
+    const finalState = actions.reduce(webPos, Map());
+    expect(finalState).to.equal(fromJS({
+      sale_items: [ { plu: TestItem2.plu, description: TestItem2.description, prices: TestItem2.prices, quantity: 1, price: 2  } ],
+      selected_saleitem_index: 0
+    }));
+  });
+
+
+  it('handles REMOVE_SELECTED_ITEM last in list', () => {
+    const actions = [
+      createAction(types.ADD_ITEM)({ item: TestItem1 }),
+      createAction(types.ADD_ITEM)({ item: TestItem2 }),
+      createAction(types.SET_SELECTED_SALEITEM_INDEX)(1),
+      createAction(types.REMOVE_SELECTED_ITEM)(),
+    ];
+
+    const finalState = actions.reduce(webPos, Map());
+    expect(finalState).to.equal(fromJS({
+      selected_saleitem_index: 0,
+      sale_items: [ { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 1, price: 1  } ]
+    }));
+  });
+
+
 });

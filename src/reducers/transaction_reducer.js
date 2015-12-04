@@ -82,14 +82,43 @@ export function addItem(state, item, index) {
 /*
 * Remove an item from the transactional state.
 */
-export function removeItem(state, item) {
-  const items = state.getIn(['sale_items']);
-  index = items.indexOf(item);
-  if (index != -1) {
-    items.delete(index);
+export function removeItem(state, index) {
+
+  if (index >= 0) {
+    const list = state.get("sale_items", List());
+    return state.set("sale_items", list.delete(index));
+  } else {
+    return state;
+  }
+};
+
+/*
+* remove the selected sale item.
+*/
+export function removeSelectedItem(state, item) {
+  const index = getSelectedSaleItemIndex(state);
+
+  if (index >= 0) {
+    //remove the item from the list.
+    state = removeItem(state, index);
+
+    //reset the status buffer.
+    state = state.remove("status_buffer");
+
+    //if we are removing the first item in the List
+    //then the newly selected item should be the new
+    //first item.
+    const hasItems = !state.get("sale_items", List()).isEmpty();
+    let newIndex = index -1;
+    if (newIndex < 0 && hasItems) {
+       newIndex = 0;
+    }
+
+    //set the selected index to the previous item in the list.
+    return setSelectedSaleItemIndex(state, newIndex);
   }
   return state;
-};
+}
 
 export function resetPriceLevel(state) {
   if (state.has("price_level_config")) {
@@ -141,7 +170,6 @@ export function setPriceLevel(state, priceLevel) {
 */
 export function completeSale(state) {
   let priceLevelConfig = state.get("price_level_config", DEFAULT_PRICE_LEVEL_CONFIG);
-
   if (priceLevelConfig.get("reset_on") === PriceLevelResetEnum.SALE) {
     let config = {
       reset_on: PriceLevelResetEnum.NEVER,
@@ -150,6 +178,20 @@ export function completeSale(state) {
     };
     state = state.set("price_level_config", Map(config));
   }
-
   return removeTransientStateInformation(state).remove("sale_items");
+};
+
+
+/*
+* Get the currently selected sale item.
+*/
+function getSelectedSaleItemIndex(state) {
+  return state.get("selected_saleitem_index", -1);
+}
+
+/*
+* Set the index of the currently selected tranasction item.
+*/
+export function setSelectedSaleItemIndex(state, index) {
+  return state.set("selected_saleitem_index", index >= -1 ? index : -1);
 }
