@@ -182,7 +182,7 @@ export function completeSale(state) {
     };
     state = state.set("price_level_config", Map(config));
   }
-  return removeTransientStateInformation(state).remove("sale_items");
+  return removeTransientStateInformation(state).set("sale_items", List());
 };
 
 

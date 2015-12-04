@@ -15,21 +15,27 @@ import * as actionCreators from '../action_creators';
 export const PointOfSaleMain = React.createClass({
   render: function() {
     return <div class="TextBufferNotification">
-      <Grid  fluid={true}>
+      <div>
+        <br/>
+      <Grid fluid>
         <Row className="show-grid">
+          <Col md={12}>
+              <GridPage style={"primary"} page={this.props.navpage} callback={this.props.genericButtonPress}/>
+          </Col>
           <Col md={12}>
             <TextBufferNotification text={this.props.status} />
           </Col>
         </Row>
         <Row>
           <Col md={8}>
-              <GridPage callback={this.props.genericButtonPress}/>
+              <GridPage style={"default"} page={this.props.page} callback={this.props.genericButtonPress}/>
           </Col>
           <Col md={4}>
               <TransactionList items={this.props.items} />
           </Col>
         </Row>
       </Grid>
+      </div>
     </div>;
   }
 });
@@ -38,6 +44,8 @@ function mapStateToProps(state) {
   return {
     status: state.get("status_buffer", "Empty"),
     items: state.get('sale_items'),
+    page: state.get('current_grid_page'),
+    navpage: state.get('current_nav_page')
   };
 }
 

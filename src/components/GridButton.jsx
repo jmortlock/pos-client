@@ -1,15 +1,17 @@
 import React from 'react';
 import {connect} from 'react-redux';
 import {Button} from 'react-bootstrap';
+import PureRenderMixin from 'react-addons-pure-render-mixin';
 
-export const GridButton = React.createClass({
+export default React.createClass({
+  mixins: [PureRenderMixin],
   render: function() {
 
     return <div>
             <Button
-              bsStyle="default"
+              bsStyle= {this.props.style}
               bsSize="large"
-              onClick={() => this.props.callback(0)}
+              onClick={() => this.props.callback(this.props.type, this.props.payload)}
               block>
 
               { this.props.text }</Button>
