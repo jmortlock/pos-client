@@ -67,13 +67,17 @@ export function addItem(state, item, index) {
   } else {
     const status_buffer = quantity > 1 ? quantity.toFixed(0) + " x " + item.description : item.description;
     if (index) {
+
       return removeTransientStateInformation(state)
                   .set("status_buffer", status_buffer)
-                  .set("sale_items", insert_list.splice(index, 0, itemMap));
+                  .set("sale_items", insert_list.splice(index, 0, itemMap))
+                  .set("selected_saleitem_index", insert_list.count());
     } else {
        return removeTransientStateInformation(state)
                   .set("status_buffer", status_buffer)
-                  .set("sale_items", insert_list.push(itemMap));
+                  .set("sale_items", insert_list.push(itemMap))
+                  .set("selected_saleitem_index", insert_list.count());
+
     }
   }
   return state;
