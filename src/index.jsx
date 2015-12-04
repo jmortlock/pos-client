@@ -4,7 +4,7 @@ import Router, {Route} from 'react-router';
 import makeStore from './store'
 import {Provider} from 'react-redux';
 import App from './components/App';
-import {TransactionListContainer} from './components/TransactionList';
+import {PointOfSaleMainContainer} from './components/PointOfSaleMain';
 import {createAction} from 'redux-actions';
 import {types} from './core/actions';
 
@@ -25,7 +25,7 @@ store.dispatch(action);
 
 
 const routes = <Route component={App}>
-  <Route path="/" component={TransactionListContainer} />
+  <Route path="/" component={PointOfSaleMainContainer} />
 </Route>
 
 ReactDOM.render(
