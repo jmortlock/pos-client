@@ -71,7 +71,7 @@ export function addItem(state, item, index) {
       return removeTransientStateInformation(state)
                   .set("status_buffer", status_buffer)
                   .set("sale_items", insert_list.splice(index, 0, itemMap))
-                  .set("selected_saleitem_index", insert_list.count());
+                  .set("selected_saleitem_index", index);
     } else {
        return removeTransientStateInformation(state)
                   .set("status_buffer", status_buffer)
@@ -182,7 +182,7 @@ export function completeSale(state) {
     };
     state = state.set("price_level_config", Map(config));
   }
-  return removeTransientStateInformation(state).set("sale_items", List());
+  return removeTransientStateInformation(state).remove("selected_saleitem_index").set("sale_items", List());
 };
 
 

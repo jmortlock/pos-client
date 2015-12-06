@@ -78,7 +78,6 @@ const GridPage = {
     ]
 };
 
-
 store.dispatch(createAction("SET_CURRENT_GRID_PAGE")(GridPage));
 store.dispatch(createAction("SET_CURRENT_NAV_PAGE")(NavPage));
 

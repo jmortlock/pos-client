@@ -8,13 +8,14 @@ export default React.createClass({
   render: function() {
 
     return <div>
+            <div>
             <Button
               bsStyle= {this.props.style}
-              bsSize="large"
+              bsSize="lg"
               onClick={() => this.props.callback(this.props.type, this.props.payload)}
               block>
-
               { this.props.text }</Button>
+            </div>
           </div>;
   }
 });
