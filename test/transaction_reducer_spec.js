@@ -103,7 +103,8 @@ describe('transaction reducer', () => {
       status_buffer: TestItem1.description,
       sale_items: [
         { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 1, price: 1  }
-      ]
+      ],
+      selected_saleitem_index: 0
     }));
   });
 
@@ -116,7 +117,8 @@ describe('transaction reducer', () => {
       status_buffer: TestItem1.description,
       sale_items: [
         { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 1, price: 1  }
-      ]
+      ],
+      selected_saleitem_index: 0
     }));
   });
 
@@ -128,7 +130,8 @@ describe('transaction reducer', () => {
       status_buffer: TestItem1.description,
       sale_items: [
         { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 1, price: 1  }
-      ]
+      ],
+      selected_saleitem_index: 0
     }));
   });
 
@@ -149,7 +152,8 @@ describe('transaction reducer', () => {
       status_buffer: TestItem1.description,
       sale_items: [
         { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 1, price: 1  },
-      ]
+      ],
+      selected_saleitem_index: 0      
     }));
 
     const nextState = webPos(firstState, action);
@@ -158,7 +162,8 @@ describe('transaction reducer', () => {
       sale_items: [
         { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices,  quantity: 1, price: 1  },
         { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 1, price: 1  },
-      ]
+      ],
+      selected_saleitem_index: 1
     }));
   });
 
@@ -174,7 +179,8 @@ describe('transaction reducer', () => {
         { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 1, price: 1 },
         { plu: TestItem2.plu, description: TestItem2.description, prices: TestItem2.prices, quantity: 1, price: 2 },
       ],
-      status_buffer: TestItem2.description
+      status_buffer: TestItem2.description,
+      selected_saleitem_index: 1
     }));
   });
 
@@ -193,7 +199,8 @@ describe('transaction reducer', () => {
         { plu: TestItem3.plu, description: TestItem3.description, prices: TestItem3.prices, quantity: 1, price: 3 },
         { plu: TestItem2.plu, description: TestItem2.description, prices: TestItem2.prices, quantity: 1, price: 2 }
       ],
-      status_buffer: TestItem3.description
+      status_buffer: TestItem3.description,
+      selected_saleitem_index: 1
     }));
   });
 
@@ -211,7 +218,8 @@ describe('transaction reducer', () => {
         { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 10, price: 1 },
         { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 1, price: 1 }
       ],
-      status_buffer: TestItem1.description
+      status_buffer: TestItem1.description,
+      selected_saleitem_index: 1
     }));
   });
 
@@ -226,7 +234,8 @@ describe('transaction reducer', () => {
       sale_items: [
         { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 10, price: 1 }
       ],
-      status_buffer: '10 x ' + TestItem1.description
+      status_buffer: '10 x ' + TestItem1.description,
+      selected_saleitem_index: 0
     }));
   });
 
@@ -264,7 +273,8 @@ describe('transaction reducer', () => {
       sale_items: [
         { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 1, price: 2}
       ],
-      status_buffer:  TestItem1.description
+      status_buffer:  TestItem1.description,
+      selected_saleitem_index: 0
     }));
   });
 
@@ -291,6 +301,7 @@ describe('transaction reducer', () => {
         { plu: TestItem1.plu, description: TestItem1.description, prices: TestItem1.prices, quantity: 1, price: 2},
       ],
       status_buffer:  TestItem1.description,
+      selected_saleitem_index: 1
     }));
 
   });
@@ -317,7 +328,8 @@ describe('transaction reducer', () => {
         reset_on: PriceLevelResetEnum.NEVER,
         current_level: PriceLevelEnum.A,
         reset_to: PriceLevelEnum.A
-      }
+      },
+      selected_saleitem_index: 1
     }));
   });
 
@@ -343,7 +355,8 @@ describe('transaction reducer', () => {
         reset_on: PriceLevelResetEnum.NEVER,
         current_level: PriceLevelEnum.B,
         reset_to: PriceLevelEnum.B
-      }
+      },
+      selected_saleitem_index: 1
     }));
   });
 
@@ -369,7 +382,8 @@ describe('transaction reducer', () => {
         reset_on: PriceLevelResetEnum.NEVER,
         current_level: PriceLevelEnum.C,
         reset_to: PriceLevelEnum.C
-      }
+      },
+      selected_saleitem_index: 1
     }));
   });
 
@@ -395,7 +409,8 @@ describe('transaction reducer', () => {
         reset_on: PriceLevelResetEnum.NEVER,
         current_level: PriceLevelEnum.D,
         reset_to: PriceLevelEnum.D
-      }
+      },
+      selected_saleitem_index: 1
     }));
   });
 
@@ -421,7 +436,8 @@ describe('transaction reducer', () => {
         reset_on: PriceLevelResetEnum.NEVER,
         current_level: PriceLevelEnum.E,
         reset_to: PriceLevelEnum.E
-      }
+      },
+      selected_saleitem_index: 1
     }));
   });
 
@@ -434,7 +450,9 @@ describe('transaction reducer', () => {
     ];
 
     const finalState = actions.reduce(webPos, Map());
-    expect(finalState).to.equal(Map());
+    expect(finalState).to.equal(fromJS({
+      sale_items: List()
+    }));
   });
 
   it('COMPLETE_SALE leaves price level at last configured state', () => {
@@ -450,7 +468,8 @@ describe('transaction reducer', () => {
         reset_on: PriceLevelResetEnum.NEVER,
         current_level: PriceLevelEnum.D,
         reset_to: PriceLevelEnum.D
-      }
+      },
+      sale_items: List()
     }));
   });
 
@@ -469,7 +488,8 @@ describe('transaction reducer', () => {
         reset_on: PriceLevelResetEnum.NEVER,
         current_level: PriceLevelEnum.E,
         reset_to: PriceLevelEnum.E
-      }
+      },
+      sale_items: List()
     }));
   });
 

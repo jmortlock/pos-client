@@ -1,18 +1,21 @@
 import React from 'react';
 import {connect} from 'react-redux';
+import {Button} from 'react-bootstrap';
+import PureRenderMixin from 'react-addons-pure-render-mixin';
 
-export const GridButton = React.createClass({
+export default React.createClass({
+  mixins: [PureRenderMixin],
   render: function() {
 
-  const TestItem1 = {
-      plu:100,
-      description: 'Coopers Pale Ale',
-      prices: {A:1, B:2, C:3, D:6, E:9 }
-    };
-
     return <div>
-            <button onClick={() => this.props.addItem(TestItem1, 0)} >Add PLU</button>
-            <button onClick={() => this.props.removeSelectedItem()} >Remove PLU</button>
+            <div>
+            <Button
+              bsStyle= {this.props.style}
+              bsSize="lg"
+              onClick={() => this.props.callback(this.props.type, this.props.payload)}
+              block>
+              { this.props.text }</Button>
+            </div>
           </div>;
   }
 });

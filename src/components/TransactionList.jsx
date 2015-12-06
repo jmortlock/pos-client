@@ -1,22 +1,27 @@
 import React from 'react';
-import {connect} from 'react-redux';
-import {GridButton} from './GridButton';
-import * as actionCreators from '../action_creators';
+import PureRenderMixin from 'react-addons-pure-render-mixin';
+import {Table} from 'react-bootstrap';
 
-export const TransactionList = React.createClass({
+export default React.createClass({
+  mixins: [PureRenderMixin],
   render: function() {
     var createItem = function(item) {
-      return <li>{item.get("quantity")} x {item.get("description")}</li>;
+      return <tr>
+                <td className="col-md-2">{item.get("quantity")}</td>
+                <td className="col-md-8">{item.get("description")}</td>
+                <td className="col-md-2">{ '$' + (item.get("quantity") * item.get("price")).toFixed(2) }</td>
+              </tr>;
     };
-    return <div>status is {this.props.status}<GridButton {...this.props} /><ul>{this.props.items.map(createItem)}</ul></div>;
+    return <div>
+      <Table response hover striped ><thead>
+            <tr>
+              <th className="col-md-2">Qty</th>
+              <th className="col-md-8">Description</th>
+              <th className="col-md-2">Price</th>
+            </tr>
+            </thead>
+        <tbody>{this.props.items.map(createItem)}</tbody></Table>
+
+      </div>;
   }
 });
-
-function mapStateToProps(state) {
-  return {
-    status: state.get("status_buffer", "Empty"),
-    items: state.get('sale_items'),
-  };
-}
-
-export const TransactionListContainer = connect(mapStateToProps, actionCreators)(TransactionList);
