@@ -47,7 +47,7 @@ export const webPos = handleActions({
     return state.set("current_grid_page", action.payload);
   },
   ['SET_CURRENT_NAV_PAGE']: (state, action) => {
-    return state.set("current_nav_page", action.payload).set("showModal", false);
+    return state.set("current_nav_page", action.payload);
   }
 
 }, INITIAL_STATE);

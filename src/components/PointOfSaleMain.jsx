@@ -8,43 +8,14 @@ import {connect} from 'react-redux';
 
 import * as actionCreators from '../action_creators';
 
-const modalInstance = (
-  <div className="static-modal">
-    <Modal.Dialog>
-      <Modal.Header>
-        <Modal.Title>Modal title</Modal.Title>
-      </Modal.Header>
-
-      <Modal.Body>
-        One fine body...
-      </Modal.Body>
-
-      <Modal.Footer>
-        <Button>Close</Button>
-        <Button bsStyle="primary">Save changes</Button>
-      </Modal.Footer>
-
-    </Modal.Dialog>
-  </div>
-);
 
 //This is the hookup for the
 //Tranasction List the Keyboard Grid and the
 //Text Buffer Status.
 export const PointOfSaleMain = React.createClass({
   render: function() {
-
-    if (this.props.showModal) {
-
-    }
-
     return <div class="TextBufferNotification">
       <div>
-
-        { this.props.showModal ? modalInstance : "" }
-
-
-
         <br/>
       <Grid fluid>
         <Row className="show-grid">
@@ -74,8 +45,7 @@ function mapStateToProps(state) {
     status: state.get("status_buffer", "Empty"),
     items: state.get('sale_items'),
     page: state.get('current_grid_page'),
-    navpage: state.get('current_nav_page'),
-    showModal: state.get("showModal")
+    navpage: state.get('current_nav_page')
   };
 }
 
