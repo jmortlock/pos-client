@@ -3,7 +3,7 @@ import { createAction, handleAction, handleActions } from 'redux-actions';
 import {types} from '../core/actions';
 
 export function setNumericKeyBuffer(state, value) {
-  const parsedValue = parseInt(value);
+  const parsedValue = parseInt(value);  
   if (!isNaN(parsedValue)) {
     return state.set('numeric_key_buffer', parseInt(value));
   } else {

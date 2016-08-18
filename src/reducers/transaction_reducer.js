@@ -66,9 +66,8 @@ export function addItem(state, item, index) {
     return removeTransientStateInformation(state).set("warning_buffer", "Available Portions Exceeded for this item")
   } else {
     const status_buffer = quantity > 1 ? quantity.toFixed(0) + " x " + item.description : item.description;
-    if (index) {
-
-      return removeTransientStateInformation(state)
+    if (index) {     
+            return removeTransientStateInformation(state)
                   .set("status_buffer", status_buffer)
                   .set("sale_items", insert_list.splice(index, 0, itemMap))
                   .set("selected_saleitem_index", index);
@@ -80,7 +79,7 @@ export function addItem(state, item, index) {
 
     }
   }
-  return state;
+ // return state;
 };
 
 /*

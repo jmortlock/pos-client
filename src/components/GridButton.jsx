@@ -10,7 +10,7 @@ export default React.createClass({
     return <div>
             <div>
             <Button
-              bsStyle= {this.props.style}
+              bsStyle= "primary"
               bsSize="lg"
               onClick={() => this.props.callback(this.props.type, this.props.payload)}
               block>

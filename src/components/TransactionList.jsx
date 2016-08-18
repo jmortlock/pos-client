@@ -10,7 +10,7 @@ export default React.createClass({
                 <td className="col-md-2">{item.get("quantity")}</td>
                 <td className="col-md-8">{item.get("description")}</td>
                 <td className="col-md-2">{ '$' + (item.get("quantity") * item.get("price")).toFixed(2) }</td>
-              </tr>;
+            </tr>;
     };
     return <div>
       <Table response hover striped ><thead>
@@ -20,8 +20,6 @@ export default React.createClass({
               <th className="col-md-2">Price</th>
             </tr>
             </thead>
-        <tbody>{this.props.items.map(createItem)}</tbody></Table>
-
-      </div>;
+        <tbody>{this.props.items.map(createItem)}</tbody></Table></div>;
   }
 });

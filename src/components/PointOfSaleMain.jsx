@@ -23,7 +23,7 @@ export const PointOfSaleMain = React.createClass({
               <GridPage style={"primary"} page={this.props.navpage} callback={this.props.genericButtonPress}/>
           </Col>
           <Col md={12}>
-            <TextBufferNotification text={this.props.status} />
+            <TextBufferNotification text={this.props.status}/>
           </Col>
         </Row>
         <Row>
